@@ -1,3 +1,74 @@
+# Table of Contents
+
+* [构建工具](#构建工具)
+   * [为什么需要构建工具？](#为什么需要构建工具)
+   * [前端构建工具的演变历史](#前端构建工具的演变历史)
+   * [为什么选择 webpack ?](#为什么选择-webpack-)
+* [初识 webpack](#初识-webpack)
+   * [配置文件](#配置文件)
+   * [Loaders](#loaders)
+      * [常见的 Loaders](#常见的-loaders)
+      * [Loaders 的用法](#loaders-的用法)
+   * [Plugins](#plugins)
+      * [常见的 Plugins](#常见的-plugins)
+      * [Plugins 的使用](#plugins-的使用)
+   * [Mode](#mode)
+* [webpack 使用](#webpack-使用)
+      * [练习使用](#练习使用)
+      * [webpack 中文件监听](#webpack-中文件监听)
+      * [热更新 webpack-dev-server](#热更新-webpack-dev-server)
+      * [热更新 webpack-dev-middleware](#热更新-webpack-dev-middleware)
+      * [热更新的原理分析](#热更新的原理分析)
+   * [文件指纹策略](#文件指纹策略)
+      * [文件指纹的生成方式](#文件指纹的生成方式)
+      * [文件指纹 webpack 配置](#文件指纹-webpack-配置)
+   * [代码压缩](#代码压缩)
+      * [JS 文件压缩](#js-文件压缩)
+      * [CSS 文件压缩](#css-文件压缩)
+      * [html 文件压缩](#html-文件压缩)
+* [webpack 进阶](#webpack-进阶)
+   * [PostCSS 插件 autoprefixer 自动补齐 CSS3 前缀](#postcss-插件-autoprefixer-自动补齐-css3-前缀)
+   * [移动端 CSS px 自动转成 rem](#移动端-css-px-自动转成-rem)
+   * [静态资源的内联](#静态资源的内联)
+      * [资源内联的意义](#资源内联的意义)
+         * [代码层面：](#代码层面)
+         * [请求层面：减少 HTTP 网络请求数](#请求层面减少-http-网络请求数)
+      * [HTML 和 JS 内联](#html-和-js-内联)
+      * [CSS 内联](#css-内联)
+   * [多页面应用（MPA）打包通用方案](#多页面应用mpa打包通用方案)
+   * [source map](#source-map)
+   * [Tree-shaking](#tree-shaking)
+      * [DCE (Elimination)](#dce-elimination)
+      * [Tree-shaking 的原理](#tree-shaking-的原理)
+   * [ScopeHoisting 的使用和原理分析](#scopehoisting-的使用和原理分析)
+      * [scope hoisting 原理](#scope-hoisting-原理)
+      * [使用](#使用)
+   * [体积优化策略](#体积优化策略)
+      * [公共资源分离](#公共资源分离)
+      * [图片压缩](#图片压缩)
+      * [imagemin 的优点](#imagemin-的优点)
+      * [imagemin 的压缩原理](#imagemin-的压缩原理)
+      * [动态 Polyfill](#动态-polyfill)
+   * [分割代码和动态 import](#分割代码和动态-import)
+* [webpack 性能分析和优化](#webpack-性能分析和优化)
+   * [初级分析：使用 webpack 内置的 stats](#初级分析使用-webpack-内置的-stats)
+   * [速度分析：使用 speed-measure-webpack-plugin](#速度分析使用-speed-measure-webpack-plugin)
+   * [体积分析：使用 webpack-bundle-analyszer](#体积分析使用-webpack-bundle-analyszer)
+   * [多进程/多实例构建](#多进程多实例构建)
+   * [多进程/多实例并行压缩](#多进程多实例并行压缩)
+   * [进一步分包：预编译资源模块](#进一步分包预编译资源模块)
+      * [分包：设置 Externals](#分包设置-externals)
+      * [进一步分包：预编译资源模块](#进一步分包预编译资源模块-1)
+   * [充分利用缓存提升二次构建速度](#充分利用缓存提升二次构建速度)
+   * [缩小构建目标](#缩小构建目标)
+      * [减少文件搜索范围](#减少文件搜索范围)
+* [深入 webpack](#深入-webpack)
+   * [webpack 启动过程分析](#webpack-启动过程分析)
+   * [webpack-cli 源码阅读](#webpack-cli-源码阅读)
+* [实战](#实战)
+   * [商城技术栈选型和整体架构](#商城技术栈选型和整体架构)
+   * [商城界面 UI 设计与模块拆分](#商城界面-ui-设计与模块拆分)
+
 ## 构建工具
 
 ### 为什么需要构建工具？
@@ -546,7 +617,6 @@ webpack v4 在将 mode 设置为 `production` 会默认开启 scope hoisting ，
 
 使用：配置 [image-webpack-loader](https://www.npmjs.com/package/image-webpack-loader)
 
-
 #### imagemin 的优点
 
 - 有很多定制选项
@@ -555,11 +625,10 @@ webpack v4 在将 mode 设置为 `production` 会默认开启 scope hoisting ，
 
 #### imagemin 的压缩原理
 
-- pngquant：是一款PNG 压缩器，通过图像转换为具有alpha通道（通常比24/32位PNG文件小 60%-80%）的更高效的8位PNG格式，可显著减小文件大小。
-- pngcrush: 其主要目的是通过尝试不同的压缩级别和PNG过滤方法来降低PNG IDAT数据流的大小。
-- optipng：其设计灵感来源于pngcrush. optipng 可将图像文件重新压缩为更小的尺寸，而不会丢失任何信息。
-- tinypng： 也是将24位png文件转化为更小有索引的8位图片，同时所有非必要的metadata也会被剥离掉。
-
+- pngquant：是一款 PNG 压缩器，通过图像转换为具有 alpha 通道（通常比 24/32 位 PNG 文件小 60%-80%）的更高效的 8 位 PNG 格式，可显著减小文件大小。
+- pngcrush: 其主要目的是通过尝试不同的压缩级别和 PNG 过滤方法来降低 PNG IDAT 数据流的大小。
+- optipng：其设计灵感来源于 pngcrush. optipng 可将图像文件重新压缩为更小的尺寸，而不会丢失任何信息。
+- tinypng： 也是将 24 位 png 文件转化为更小有索引的 8 位图片，同时所有非必要的 metadata 也会被剥离掉。
 
 #### 动态 Polyfill
 
@@ -648,7 +717,6 @@ new webpack.DllReferencePlugin({
 - terser-webpack-plugin 开启缓存 （属性 `cache:true`）
 - 使用 cache-loader 或者 hard-source-webpack-plugin
 
-
 ### 缩小构建目标
 
 目的：尽可能的少构建模块，比如 `babel-loader` 不解析 `node_module`。
@@ -671,4 +739,3 @@ new webpack.DllReferencePlugin({
 ### 商城技术栈选型和整体架构
 
 ### 商城界面 UI 设计与模块拆分
-
